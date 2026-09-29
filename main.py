@@ -21,7 +21,7 @@ FURTHER_READING_NAME = "Here, There & Gone"
 SITE_URL = ""
 INSTAGRAM_URL = ""
 
-BRAND = "Singapore Guide"
+BRAND = "Red Dot Brief"
 
 bot = telebot.TeleBot(BOT_TOKEN, parse_mode="HTML")
 
@@ -89,7 +89,16 @@ PLACES = {
     ),
 }
 
-PLACE_ORDER = ["gardens", "mbs", "hawker", "botanic", "sentosa", "chinatown", "kampongglam", "jewel"]
+PLACE_ORDER = [
+    "gardens",
+    "mbs",
+    "hawker",
+    "botanic",
+    "sentosa",
+    "chinatown",
+    "kampongglam",
+    "jewel",
+]
 
 
 # ============================================
@@ -189,7 +198,7 @@ BTN_MENU = ("🗂 Menu", "menu")
 # ============================================
 def place_text(key):
     title, area, desc, tips = PLACES[key]
-    lines = "\n".join(f"▸ {t}" for t in tips)
+    lines = "\n".join(f"▸ {tip}" for tip in tips)
     return (
         f"<b>{title}</b>\n"
         f"<i>📍 {area}</i>\n"
@@ -215,7 +224,7 @@ def screen(action):
             [site_btn(), ig_btn()],
         ]
     if action == "list":
-        rows = [[btn(PLACES[k][0], f"place:{k}")] for k in PLACE_ORDER]
+        rows = [[btn(PLACES[key][0], f"place:{key}")] for key in PLACE_ORDER]
         rows.append([btn(*BTN_MENU)])
         return TEXT_LIST, rows
     if action == "menu":
@@ -245,8 +254,10 @@ def render(call, text, rows):
     markup = make_markup(rows)
     try:
         bot.edit_message_text(
-            text, chat_id=call.message.chat.id,
-            message_id=call.message.message_id, reply_markup=markup,
+            text,
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            reply_markup=markup,
         )
     except ApiTelegramException:
         bot.send_message(call.message.chat.id, text, reply_markup=markup)
@@ -274,6 +285,13 @@ def main() -> None:
         level=logging.INFO,
     )
     logging.getLogger("urllib3").setLevel(logging.WARNING)
+    try:
+        if bot.set_my_name(BRAND):
+            logging.info("Telegram bot display name updated")
+        else:
+            logging.warning("Telegram did not confirm its display name update")
+    except Exception:
+        logging.exception("Could not update Telegram bot display name")
     logging.info("%s bot is starting", BRAND)
     bot.infinity_polling(skip_pending=True)
 
